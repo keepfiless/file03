@@ -98,6 +98,11 @@ jobs:
             echo "Password protection: DISABLED"
           fi
 
+          # Function for proper URL encoding
+          urlencode() {
+            python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$1"
+          }
+
           case "$QUALITY" in
             "audio")
               FORMAT="bestaudio"
@@ -227,12 +232,12 @@ jobs:
               TOTAL_SIZE_MB=$(echo "scale=2; $TOTAL_SIZE / 1024 / 1024" | bc)
 
               DOWNLOAD_LINKS_MD=""
-              FOLDER_ENCODED=$(echo "${FINAL_FOLDER_NAME}" | sed 's/ /%20/g')
+              FOLDER_ENCODED=$(urlencode "${FINAL_FOLDER_NAME}")
               LINK_NUM=0
               for part_file in "videos/${FINAL_FOLDER_NAME}"/*.z*; do
                 if [ -f "$part_file" ]; then
                   PART_BASENAME=$(basename "$part_file")
-                  PART_ENCODED=$(echo "${PART_BASENAME}" | sed 's/ /%20/g')
+                  PART_ENCODED=$(urlencode "${PART_BASENAME}")
                   RAW_LINK="https://github.com/${REPO_OWNER}/${REPO_NAME}/raw/${BRANCH}/videos/${FOLDER_ENCODED}/${PART_ENCODED}"
                   LINK_NUM=$((LINK_NUM + 1))
                   DOWNLOAD_LINKS_MD="${DOWNLOAD_LINKS_MD}| ${LINK_NUM} | \`${PART_BASENAME}\` | [Download](${RAW_LINK}) |"$'\n'
@@ -296,8 +301,9 @@ jobs:
                 cd ..
 
                 SIZE_MB=$(echo "scale=2; $SIZE / 1024 / 1024" | bc)
-                FOLDER_ENCODED=$(echo "${FINAL_FOLDER_NAME}" | sed 's/ /%20/g')
-                RAW_LINK="https://github.com/${REPO_OWNER}/${REPO_NAME}/raw/${BRANCH}/videos/${FOLDER_ENCODED}/${FINAL_FOLDER_NAME}.zip"
+                FOLDER_ENCODED=$(urlencode "${FINAL_FOLDER_NAME}")
+                FILE_ENCODED=$(urlencode "${FINAL_FOLDER_NAME}.zip")
+                RAW_LINK="https://github.com/${REPO_OWNER}/${REPO_NAME}/raw/${BRANCH}/videos/${FOLDER_ENCODED}/${FILE_ENCODED}"
 
                 README_FILE="videos/${FINAL_FOLDER_NAME}/README.md"
                 {
@@ -337,8 +343,8 @@ jobs:
                 cp "$FILE" "videos/${FINAL_FOLDER_NAME}/${FINAL_FOLDER_NAME}.${EXT}"
 
                 SIZE_MB=$(echo "scale=2; $SIZE / 1024 / 1024" | bc)
-                FOLDER_ENCODED=$(echo "${FINAL_FOLDER_NAME}" | sed 's/ /%20/g')
-                FILE_ENCODED=$(echo "${FINAL_FOLDER_NAME}.${EXT}" | sed 's/ /%20/g')
+                FOLDER_ENCODED=$(urlencode "${FINAL_FOLDER_NAME}")
+                FILE_ENCODED=$(urlencode "${FINAL_FOLDER_NAME}.${EXT}")
                 RAW_LINK="https://github.com/${REPO_OWNER}/${REPO_NAME}/raw/${BRANCH}/videos/${FOLDER_ENCODED}/${FILE_ENCODED}"
 
                 README_FILE="videos/${FINAL_FOLDER_NAME}/README.md"
